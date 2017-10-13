@@ -85,7 +85,7 @@ setup(
         'SQLAlchemy == 1.0.0',
         'future == 0.15.2',
         'tornado == 4.3.0',
-        'python-dateutil == 2.2',
+        'python-dateutil == 2.6',
     ],
     classifiers=classifiers,
     cmdclass={'clean': CleanHook},

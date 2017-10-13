@@ -21,13 +21,27 @@ logger = logging.getLogger()
 ch = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
+
+def should_log(record):
+    if record.name.startswith("tornado.access"):
+        return False
+    return True
+logging_filter = logging.Filter()
+logging_filter.filter = should_log
+ch.addFilter(logging_filter)
+
 logger.addHandler(ch)
+
 
 
 ENVIRONMENT_VARIABLE = 'NDSCHEDULER_SETTINGS_MODULE'
 
 _settings_module = None
 
+ENVIRONMENT_VARIABLE_PATH = 'NDSCHEDULER_SETTINGS_PATH'
+path_to_add = os.environ.get(ENVIRONMENT_VARIABLE_PATH)
+if path_to_add is not None:
+    sys.path.append(os.path.abspath(path_to_add))
 
 def setup_package():
     global _settings_module

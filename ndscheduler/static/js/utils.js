@@ -92,8 +92,19 @@ define(['spin', 'noty'], function(Spinner) {
     if (argsString.trim() === '') {
       return [];
     }
-
-    return JSON.parse(argsString);
+    var str ='';
+    var reg = new RegExp("[\\u4E00-\\u9FA5]","i");
+    for(var i=0;i<argsString.length;i++) {
+      if (reg.test(argsString[i])) {
+        str+="\\\\u"+parseInt(argsString[i].charCodeAt(0),10).toString(16);
+      }
+      else {
+        console.log(argsString[i]);
+        str+=argsString[i];
+      }
+    }
+    console.log(str)
+    return JSON.parse(str);
   };
 
   /**
