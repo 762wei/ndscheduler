@@ -9,6 +9,14 @@ import os
 import socket
 from urllib import quote
 import json
+import datetime
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.application import MIMEApplication
+from email.header import Header
+import sys, os
 
 
 def str_process(string):
@@ -52,32 +60,9 @@ def run_script(exefile, new_window=True):
             return status
     return 1
 
-def run_socket_cmd(params):
-    
-    try:
-
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print params['ip'],params['port']
-        client.connect((str(params['ip']),params['port']))
-        client.settimeout(5)
-        client.sendall(quote(params['cmd']).encode('utf-8'))
-        
-    except Exception as e:
-        print e
-    finally:
-        client.close()  
 
 '''send emails ususally after run the scripts'''
 def send_email(receivers, subject, content, images, attachments, email_info_file="config/email_info.json"):
-    import datetime
-    import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-    from email.mime.image import MIMEImage
-    from email.mime.application import MIMEApplication
-    from email.header import Header
-    import sys, os
-
 
     email_file = open(email_info_file)
     emai_info = json.load(email_file)
@@ -86,13 +71,11 @@ def send_email(receivers, subject, content, images, attachments, email_info_file
     username = emai_info["username"]
     password = emai_info["password"]
  
-
     #add the title, from and to
     msg = MIMEMultipart('related')
     msg['Subject'] = Header(subject, 'utf-8')
     msg['from'] = sender
     msg['to'] = ','.join(receivers)
-
 
     #add the content into the email
     msgAlternative = MIMEMultipart('alternative')
@@ -147,8 +130,9 @@ def send_email(receivers, subject, content, images, attachments, email_info_file
 
 
     #send email to receivers
-    smtp = smtplib.SMTP()
-    smtp.connect('smtp.163.com')
+    # smtp = smtplib.SMTP()
+    # smtp.connect('smtp.163.com')
+    smtp = smtplib.SMTP_SSL('smtp.qq.com', 465)
     smtp.login(username, password)
     smtp.sendmail(sender, receivers, msg.as_string())
     smtp.quit()
