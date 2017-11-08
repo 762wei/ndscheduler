@@ -20,7 +20,8 @@ def get_lan_ip(prefix = '192.'):
         # if i != localIP:
         if len(i) > 0 and isinstance(i, list):
             for ii in i :
-                if ii.startswith(prefix) and ii != localIP:
+                # if ii.startswith(prefix) and ii != localIP:
+                if ii.startswith(prefix):
                     print "LAN IP:%s"%ii
                     return ii
 
