@@ -4,7 +4,6 @@ import sys
 import pandas as pd
 import json
 
-
 def get_project_params():
     project_desc_path = sys.argv[1:][0]
     project_name = sys.argv[1:][1]
@@ -16,7 +15,7 @@ def get_project_params():
 def convert_cmdstr_2_dic(cmd_param_str):
     param_dic = {}
     try:
-        tmp = cmd_param_str.replace('\\','"')
+        tmp = cmd_param_str.replace('$','"')
         param_dic = json.loads(tmp)
     except Exception as e:
         print e

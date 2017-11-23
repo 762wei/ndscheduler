@@ -43,9 +43,32 @@ def send_msg(ip_addr, port, msg):
         client.close()
 
 
+# ---   socket server端   ---
+
+# 启动py程序
+def start_py_prog(params):
+
+    print u'执行py文件'
+    remote_py_file_path = params['remote_py_file_path']
+
+    command = '''start cmd /k " python {remote_py_file_path} {extra_param} && exit"'''
+    param_json_str = json.dumps(params)
+    param_json_str = param_json_str.replace('"','$')
+    command = command.format(**{'remote_py_file_path': remote_py_file_path,
+                                'extra_param': param_json_str})
+
+    print command
+    os.system(command)
+
+
+# 处理wind行情订阅数据
+def proc_wsq_data(params):
+    print u'处理wind行情订阅数据'
+    pass
+
+
 # socket server端
 def setup_socket_server(local_port = 43218, need_hide_window = False):
-
     local_ip = get_lan_ip()  # 配置socket server绑定的本地IP
     print 'server starting...'
 
@@ -69,40 +92,29 @@ def setup_socket_server(local_port = 43218, need_hide_window = False):
     admin_filter['192.168.35.186'] = {'exe'}
     admin_filter['127.0.0.1'] = {'exe'}
 
-    # 启动py程序
-    def start_py_prog(msg):
-        
-        params = json.loads(msg)
-
-        py_dir = params['remote_py_dir']
-        py_file = params['remote_py_file']
-
-        command = '''start cmd /k "cd {py_dir} & python {py_file} {extra_param}"'''
-        param_json_str = json.dumps(params)
-        param_json_str = param_json_str.replace('"','\\\\"').replace(' ','')
-        command = command.format(**{'py_dir':py_dir, 'py_file': py_file, 'extra_param': param_json_str})
-        
-        print command
-        os.system(command)
-
-
     while 1:
         
         conn, addr = server.accept()
-        msg = unquote(conn.recv(1024).decode('utf-8'))
-        
-        peer_name = conn.getpeername() # peer_name是个tuple，peer_name[0]是ip，peer_name[1]是端口号
+        msg = unquote(conn.recv(1024).decode('utf-8')) # json格式的str
+
+        peer_name = conn.getpeername()  # peer_name是个tuple，peer_name[0]是ip，peer_name[1]是端口号
         now_dt = str(datetime.datetime.now())
-        print u'%s, visitor: %s:%s'%(now_dt, peer_name[0],peer_name[1]) # , sock_name
+        print u'%s, visitor: %s:%s' % (now_dt, peer_name[0], peer_name[1])  # , sock_name
+
+        params = json.loads(msg)
+        msg_type = params['msg_type']
 
         # 管理员权限验证
-        if True:
-        # if peer_name[0] in admin_filter.keys():
-            # # print msg, 'quit'==msg, u'quit'==msg, u'quit'==str(msg), 'quit' == str(msg)
-            # if '"quit"' == msg:
-            #     conn.close()
-            #     exit(0)
+        if True: # if peer_name[0] in admin_filter.keys():
+            # 1. 普通运行脚本的msg
+            if 'run_py' == msg_type:
+                t = threading.Thread(target=start_py_prog,args=(params,))
+                t.start()
+            # 2. 处理wind订阅的行情数据
+            elif 'wsq_data' == msg_type:
+                t = threading.Thread(target=proc_wsq_data, args=(params,))
+                t.start()
 
-            t = threading.Thread(target=start_py_prog,args=(msg,))
-            t.start()
 
+if __name__ == '__main__':
+    setup_socket_server(local_port = 43218, need_hide_window = True)
