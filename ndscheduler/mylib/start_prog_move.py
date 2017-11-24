@@ -89,7 +89,8 @@ def start_prog(path):
 
                     elif len(handles) > 1: # 标题名字有重复的，根据 createProcess 得到的pid， 再找handle， 移动
                         # 先假设这个pid只会有一个handle
-                        hwnd = window_info_df.loc[window_info_df['pid']==dwProcessId, 'handle'].values[0]
+                        hwnd = window_info_df.loc[(window_info_df['pid'] == dwProcessId) & (
+                        (window_info_df['caption'] == d['caption'])), 'handle'].values[0]
 
                 # ========
                 ShowWindow(hwnd, SW_RESTORE)  # 1. 还原 # 有些窗口不能还原?!!!
@@ -97,6 +98,7 @@ def start_prog(path):
                 MoveWindow(hwnd, x, y, dx, dy, True)  # 2. 移动
 
                 if d['need_max'] == 'y':
+                    time.sleep(1)
                     ShowWindow(hwnd, SW_MAXIMIZE)  # 最大化
 
 def prog_run():
